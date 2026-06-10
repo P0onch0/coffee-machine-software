@@ -1,6 +1,6 @@
 ﻿namespace Hardware;
 
-internal enum NfcState
+public enum NfcState
 {
     NoDevice,
     PrepaidDevicePresent,

@@ -1,6 +1,6 @@
 ﻿namespace Hardware;
 
-internal interface INfcTransceiver
+public interface INfcTransceiver
 {
     /// <summary>
     /// Evènement déclenché lorsqu'un appareil apparaît ou disparaît à proximité du capteur NFC.
