@@ -144,6 +144,26 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void AucunCafé_QuandDeuxPrésentationsEtSoldeInsuffisant()
+    {
+        // ETANT DONNE une machine à café avec une clé sans solde
+        var clé = new CléNfc(soldeSuffisant: false);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND l'utilisateur présente sa clé deux fois de suite
+        clé.Présenter();
+        clé.Présenter();
+
+        // ALORS aucun café n'est préparé et deux débits sont refusés
+        BrewerAssert.AucunCafé(brewer);
+        Assert.Equal(2, clé.NombreDébits);
+    }
+
+    [Fact]
     public void MontantDébité_EstExactementLePrixDUnCafé()
     {
         // ETANT DONNE une machine à café avec une clé chargée
