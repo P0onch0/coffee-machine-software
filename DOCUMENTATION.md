@@ -3,7 +3,7 @@
 ## Contexte
 
 Projet de cours **Test & Industrialisation** (Master 1).  
-Objectif pédagogique : pratiquer le **TDD (Test-Driven Development)** sur un système embarqué simulé — une machine à café — en utilisant des **doubles de test** (Stub, Spy, Fake, Dummy) et en respectant les conventions de lisibilité (Builder, Matcher, AAA).
+Objectif : pratiquer le **TDD (Test-Driven Development)** sur un système embarqué simulé — une machine à café — en utilisant des **doubles de test** (Stub, Spy, Fake, Dummy) et en respectant les conventions de lisibilité (Builder, Matcher, AAA).
 
 ---
 
@@ -76,10 +76,12 @@ NfcStateChanged(état)
   ├─ état != PrepaidDevicePresent → ignoré
   └─ TryChargeAmount(40)
        ├─ false → ignoré (solde insuffisant ou erreur)
-       └─ true  → MakeACoffee()  [exception absorbée — argent déjà débité]
+       └─ true  → MakeACoffee()
+            ├─ succès → café servi
+            └─ échec  → TryRefillDevice(40)  [remboursement de la clé]
 ```
 
-> **Règle métier** : en cas de panne du brewer après un débit NFC, l'argent est perdu (le hardware ne supporte pas de remboursement NFC au niveau simple).
+> **Règle métier** : en cas de panne du brewer après un débit NFC, la machine tente de rembourser les 40cts sur la clé via `TryRefillDevice`.
 
 ### `Coin.cs`
 
