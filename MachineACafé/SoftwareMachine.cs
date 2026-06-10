@@ -21,7 +21,7 @@ public class SoftwareMachine
     {
         if (état != NfcState.PrepaidDevicePresent) return;
         if (!_nfcTransceiver.TryChargeAmount(40)) return;
-        _brewer.MakeACoffee();
+        try { _brewer.MakeACoffee(); } catch { }
     }
 
     private void Insérer(Coin somme)
