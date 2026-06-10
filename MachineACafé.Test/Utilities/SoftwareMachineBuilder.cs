@@ -6,10 +6,11 @@ internal class SoftwareMachineBuilder
 {
     private IBrewer _brewer = new BrewerStub();
     private IChangeMachine _changeMachine = new ChangeMachineStub();
+    private INfcTransceiver _nfcTransceiver = new NfcTransceiverStub();
 
     public SoftwareMachine Build()
     {
-        return new SoftwareMachine(_brewer, _changeMachine);
+        return new SoftwareMachine(_brewer, _changeMachine, _nfcTransceiver);
     }
 
     public SoftwareMachineBuilder AyantUnBrewer(IBrewer brewer)
@@ -21,6 +22,12 @@ internal class SoftwareMachineBuilder
     public SoftwareMachineBuilder AyantUneChangeMachine(IChangeMachine changeMachine)
     {
         _changeMachine = changeMachine;
+        return this;
+    }
+
+    public SoftwareMachineBuilder AyantUnNfcTransceiver(INfcTransceiver nfcTransceiver)
+    {
+        _nfcTransceiver = nfcTransceiver;
         return this;
     }
 }
