@@ -77,6 +77,38 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void TryChargeAmountNonAppelé_QuandMachineAuRepos()
+    {
+        // ETANT DONNE une machine à café avec un espion NFC, sans interaction
+        var nfc = new NfcTransceiverFake(chargeResult: true);
+        var spy = new NfcTransceiverSpy(nfc);
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(spy)
+            .Build();
+
+        // ALORS TryChargeAmount n'est jamais appelé au démarrage
+        Assert.True(spy.Untouched);
+    }
+
+    [Fact]
+    public void CaféNonServi_QuandBrewerDéfaillantEtCléNfc()
+    {
+        // ETANT DONNE une machine à café avec un brewer défaillant et une clé avec solde suffisant
+        var nfc = new NfcTransceiverFake(chargeResult: true);
+        var brewer = new BrewerSpy(new BrewerDummy());
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(nfc)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND une clé pré-payée est présentée
+        nfc.SimulerApparitionCle(NfcState.PrepaidDevicePresent);
+
+        // ALORS MakeACoffee est tenté une fois (le débit NFC a déjà eu lieu)
+        Assert.Equal(1, brewer.MakeACoffeeInvocations);
+    }
+
+    [Fact]
     public void TryChargeAmountAppeléAvecExactement40Centimes()
     {
         // ETANT DONNE une machine à café avec un espion NFC et une clé avec solde suffisant
