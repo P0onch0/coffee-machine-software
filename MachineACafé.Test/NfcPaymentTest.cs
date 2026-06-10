@@ -22,4 +22,22 @@ public class NfcPaymentTest
         // ALORS MakeACoffee est appelé une fois
         Assert.Equal(1, brewer.MakeACoffeeInvocations);
     }
+
+    [Fact]
+    public void CaféNonServi_QuandSoldeInsuffisant()
+    {
+        // ETANT DONNE une machine à café avec une clé NFC sans solde suffisant
+        var nfc = new NfcTransceiverFake(chargeResult: false);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(nfc)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND la clé est présentée mais le débit échoue
+        nfc.SimulerApparitionCle(NfcState.PrepaidDevicePresent);
+
+        // ALORS aucun café n'est préparé
+        Assert.Equal(0, brewer.MakeACoffeeInvocations);
+    }
 }
