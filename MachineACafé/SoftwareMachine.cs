@@ -19,7 +19,7 @@ public class SoftwareMachine
 
     private void PaiementNfc(NfcState état)
     {
-        _nfcTransceiver.TryChargeAmount(40);
+        if (!_nfcTransceiver.TryChargeAmount(40)) return;
         _brewer.MakeACoffee();
     }
 
