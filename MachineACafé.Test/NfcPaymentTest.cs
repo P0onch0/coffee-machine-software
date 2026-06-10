@@ -20,7 +20,7 @@ public class NfcPaymentTest
         nfc.SimulerApparitionCle(NfcState.PrepaidDevicePresent);
 
         // ALORS MakeACoffee est appelé une fois
-        Assert.Equal(1, brewer.MakeACoffeeInvocations);
+        BrewerAssert.CaféPréparé(brewer);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class NfcPaymentTest
         nfc.SimulerApparitionCle(NfcState.RefillableDevicePresent);
 
         // ALORS aucun café n'est préparé et TryChargeAmount n'est pas appelé
-        Assert.Equal(0, brewer.MakeACoffeeInvocations);
+        BrewerAssert.AucunCafé(brewer);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class NfcPaymentTest
         nfc.SimulerApparitionCle(NfcState.PrepaidDevicePresent);
 
         // ALORS aucun café n'est préparé
-        Assert.Equal(0, brewer.MakeACoffeeInvocations);
+        BrewerAssert.AucunCafé(brewer);
     }
 
     [Fact]
