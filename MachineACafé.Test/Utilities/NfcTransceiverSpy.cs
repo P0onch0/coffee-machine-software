@@ -10,6 +10,9 @@ internal class NfcTransceiverSpy : INfcTransceiver
     public ushort? LastAmountCharged { get; private set; }
     public bool Untouched => TryChargeAmountInvocations == 0;
 
+    public ushort TryRefillDeviceInvocations { get; private set; }
+    public ushort? LastAmountRefilled { get; private set; }
+
     public NfcTransceiverSpy() : this(new NfcTransceiverStub()) { }
 
     public NfcTransceiverSpy(INfcTransceiver behavior)
@@ -30,5 +33,10 @@ internal class NfcTransceiverSpy : INfcTransceiver
         return _behavior.TryChargeAmount(amountInCents);
     }
 
-    public bool TryRefillDevice(ushort amountInCents) => _behavior.TryRefillDevice(amountInCents);
+    public bool TryRefillDevice(ushort amountInCents)
+    {
+        TryRefillDeviceInvocations++;
+        LastAmountRefilled = amountInCents;
+        return _behavior.TryRefillDevice(amountInCents);
+    }
 }
