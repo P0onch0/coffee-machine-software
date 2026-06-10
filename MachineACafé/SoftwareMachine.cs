@@ -19,6 +19,7 @@ public class SoftwareMachine
 
     private void PaiementNfc(NfcState état)
     {
+        if (état != NfcState.PrepaidDevicePresent) return;
         if (!_nfcTransceiver.TryChargeAmount(40)) return;
         _brewer.MakeACoffee();
     }
