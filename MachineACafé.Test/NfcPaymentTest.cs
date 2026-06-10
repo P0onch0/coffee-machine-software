@@ -124,6 +124,26 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void DeuxCafésPréparés_QuandCléPrésentéeDeuxFoisDeSuite()
+    {
+        // ETANT DONNE une machine à café avec une clé pré-payée chargée
+        var clé = new CléNfc(soldeSuffisant: true);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND l'utilisateur présente sa clé deux fois de suite
+        clé.Présenter();
+        clé.Présenter();
+
+        // ALORS deux cafés sont préparés et deux débits sont effectués
+        Assert.Equal(2, brewer.MakeACoffeeInvocations);
+        Assert.Equal(2, clé.NombreDébits);
+    }
+
+    [Fact]
     public void MontantDébité_EstExactementLePrixDUnCafé()
     {
         // ETANT DONNE une machine à café avec une clé chargée
