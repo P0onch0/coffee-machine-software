@@ -109,6 +109,25 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void ArgentRemboursé_QuandBrewerDéfaillantAprèsDébitNfc()
+    {
+        // ETANT DONNE une machine à café avec un brewer défaillant et un espion NFC
+        var nfc = new NfcTransceiverFake(chargeResult: true);
+        var spy = new NfcTransceiverSpy(nfc);
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(spy)
+            .AyantUnBrewer(new BrewerDummy())
+            .Build();
+
+        // QUAND une clé pré-payée est présentée et le brewer tombe en panne
+        nfc.SimulerApparitionCle(NfcState.PrepaidDevicePresent);
+
+        // ALORS TryRefillDevice est appelé avec 40 centimes pour rembourser la clé
+        Assert.Equal(1, spy.TryRefillDeviceInvocations);
+        Assert.Equal((ushort)40, spy.LastAmountRefilled);
+    }
+
+    [Fact]
     public void TryChargeAmountAppeléAvecExactement40Centimes()
     {
         // ETANT DONNE une machine à café avec un espion NFC et une clé avec solde suffisant
