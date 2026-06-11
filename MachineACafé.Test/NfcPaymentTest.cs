@@ -11,7 +11,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -29,7 +29,7 @@ public class NfcPaymentTest
         var clé = new CléNfc();
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -41,13 +41,29 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void AucunDébit_QuandCléRechargeable()
+    {
+        // ETANT DONNE une machine à café
+        var clé = new CléNfc();
+        _ = new SoftwareMachineBuilder()
+            .AyantUneClé(clé)
+            .Build();
+
+        // QUAND une clé rechargeable est présentée
+        clé.PrésentationCléRechargeable();
+
+        // ALORS aucun débit n'est tenté sur la clé
+        Assert.Equal(0, clé.NombreDébits);
+    }
+
+    [Fact]
     public void CaféNonServi_QuandDébitRefusé()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée sans solde
         var clé = new CléNfc(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -59,12 +75,28 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void AucunRemboursement_QuandSoldeInsuffisant()
+    {
+        // ETANT DONNE une machine à café avec une clé pré-payée sans solde
+        var clé = new CléNfc(soldeSuffisant: false);
+        _ = new SoftwareMachineBuilder()
+            .AyantUneClé(clé)
+            .Build();
+
+        // QUAND la clé est présentée
+        clé.Présenter();
+
+        // ALORS aucun remboursement n'est déclenché
+        Assert.Equal(0, clé.NombreRemboursements);
+    }
+
+    [Fact]
     public void AucunDébit_QuandAucunDispositif()
     {
         // ETANT DONNE une machine à café
         var clé = new CléNfc();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .Build();
 
         // QUAND le lecteur signale l'absence de clé
@@ -80,7 +112,7 @@ public class NfcPaymentTest
         // ETANT DONNE une machine à café sans interaction
         var clé = new CléNfc();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .Build();
 
         // ALORS aucun débit n'est déclenché au démarrage
@@ -94,7 +126,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy(new BrewerDummy());
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -111,7 +143,7 @@ public class NfcPaymentTest
         // ETANT DONNE une machine à café avec un brewer en panne et une clé chargée
         var clé = new CléNfc(soldeSuffisant: true);
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(new BrewerDummy())
             .Build();
 
@@ -124,13 +156,29 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void AucunRemboursement_QuandCaféPréparéAvecSuccès()
+    {
+        // ETANT DONNE une machine à café avec une clé chargée
+        var clé = new CléNfc(soldeSuffisant: true);
+        _ = new SoftwareMachineBuilder()
+            .AyantUneClé(clé)
+            .Build();
+
+        // QUAND la clé est présentée et le café est préparé sans panne
+        clé.Présenter();
+
+        // ALORS aucun remboursement n'est déclenché
+        Assert.Equal(0, clé.NombreRemboursements);
+    }
+
+    [Fact]
     public void DeuxCafésPréparés_QuandCléPrésentéeDeuxFoisDeSuite()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée chargée
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -150,7 +198,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -170,7 +218,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy(new BrewerDummy());
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -191,7 +239,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -212,7 +260,7 @@ public class NfcPaymentTest
         var clé = new CléNfc(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
@@ -231,7 +279,7 @@ public class NfcPaymentTest
         // ETANT DONNE une machine à café avec une clé chargée
         var clé = new CléNfc(soldeSuffisant: true);
         _ = new SoftwareMachineBuilder()
-            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUneClé(clé)
             .Build();
 
         // QUAND la clé est présentée

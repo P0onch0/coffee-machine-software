@@ -30,4 +30,10 @@ internal class SoftwareMachineBuilder
         _nfcTransceiver = nfcTransceiver;
         return this;
     }
+
+    public SoftwareMachineBuilder AyantUneClé(CléNfc clé)
+    {
+        _nfcTransceiver = clé.Transceiver;
+        return this;
+    }
 }
