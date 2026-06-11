@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Graphify outputs
+graphify-out/
+.graphify_*.json
+.graphify_*.txt
+.graphify_python

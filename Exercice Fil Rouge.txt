@@ -1,0 +1,31 @@
+Exercice Fil Rouge
+
+
+
+Plan de test : 
+
+Test fonctionnel : vérification du comportement de la machine
+	test first
+
+Test d'utilisabilité : comportement imprévu user
+	test first
+
+Test Fiabilité : en cas de panne/ deconnexion (pas de notre ressort)
+	test last
+
+Test de performance : que le temps écoule entre le payement et que le café soit servie ne dure pas 1h..
+	test last
+
+
+1.Binome/Git/projet
+2.Importer Hardware
+3.Avec la version simplifié, pratiquer le TDD
+4. Un maximum de microcommit
+
+le but c'est de faire des test sur cette machine a café via le hardware 
+
+Rendu 2 semaines apres les cours note def.
+
+Clé café NFc
+simple : Paiment avec un clé café prépayé
+complexe : recharge de la clé avec des pièces

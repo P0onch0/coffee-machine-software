@@ -164,6 +164,68 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void DeuxRemboursements_QuandDeuxPrésentationsAvecBrewerEnPanne()
+    {
+        // ETANT DONNE une machine à café avec un brewer en panne et une clé chargée
+        var clé = new CléNfc(soldeSuffisant: true);
+        var brewer = new BrewerSpy(new BrewerDummy());
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND l'utilisateur présente sa clé deux fois de suite
+        clé.Présenter();
+        clé.Présenter();
+
+        // ALORS deux tentatives de café sont faites, deux débits et deux remboursements
+        Assert.Equal(2, brewer.MakeACoffeeInvocations);
+        Assert.Equal(2, clé.NombreDébits);
+        Assert.Equal(2, clé.NombreRemboursements);
+    }
+
+    [Fact]
+    public void DeuxCafésPréparés_QuandRetraitEntreLesDeuxPrésentations()
+    {
+        // ETANT DONNE une machine à café avec une clé pré-payée chargée
+        var clé = new CléNfc(soldeSuffisant: true);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND l'utilisateur présente sa clé, la retire, puis la représente
+        clé.Présenter();
+        clé.Retirer();
+        clé.Présenter();
+
+        // ALORS deux cafés sont préparés et deux débits sont effectués
+        Assert.Equal(2, brewer.MakeACoffeeInvocations);
+        Assert.Equal(2, clé.NombreDébits);
+    }
+
+    [Fact]
+    public void UnCafé_QuandCléRechargeableAvantCléPréPayée()
+    {
+        // ETANT DONNE une machine à café avec une clé pré-payée chargée
+        var clé = new CléNfc(soldeSuffisant: true);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUnNfcTransceiver(clé.Transceiver)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND une clé rechargeable est présentée puis la clé pré-payée
+        clé.PrésentationCléRechargeable();
+        clé.Présenter();
+
+        // ALORS un seul café est préparé et un seul débit est effectué
+        Assert.Equal(1, brewer.MakeACoffeeInvocations);
+        Assert.Equal(1, clé.NombreDébits);
+    }
+
+    [Fact]
     public void MontantDébité_EstExactementLePrixDUnCafé()
     {
         // ETANT DONNE une machine à café avec une clé chargée
