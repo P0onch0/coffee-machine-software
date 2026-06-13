@@ -36,4 +36,10 @@ internal class SoftwareMachineBuilder
         _nfcTransceiver = clé.Transceiver;
         return this;
     }
+
+    public SoftwareMachineBuilder AyantUnBadgeRecharge(BadgeRecharge badge)
+    {
+        _nfcTransceiver = badge.Transceiver;
+        return this;
+    }
 }
