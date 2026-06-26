@@ -2,7 +2,7 @@ using Hardware;
 
 namespace MachineACafé.Test.Utilities;
 
-internal class CléNfc
+internal class CléNfcFake
 {
     private readonly NfcTransceiverFake _fake;
     private readonly NfcTransceiverSpy _spy;
@@ -13,7 +13,7 @@ internal class CléNfc
     public ushort? DernierMontantDébité => _spy.LastAmountCharged;
     public ushort? DernierMontantRemboursé => _spy.LastAmountRefilled;
 
-    public CléNfc(bool soldeSuffisant = true)
+    public CléNfcFake(bool soldeSuffisant = true)
     {
         _fake = new NfcTransceiverFake(chargeResult: soldeSuffisant);
         _spy = new NfcTransceiverSpy(_fake);

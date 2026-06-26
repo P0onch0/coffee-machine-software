@@ -2,7 +2,7 @@ using Hardware;
 
 namespace MachineACafé.Test.Utilities;
 
-internal class BadgeRecharge
+internal class BadgeRechargeFake
 {
     private readonly NfcTransceiverFake _fake;
     private readonly NfcTransceiverSpy _spy;
@@ -11,7 +11,7 @@ internal class BadgeRecharge
     public int NombreRecharges => _spy.TryRefillDeviceInvocations;
     public ushort? DernierMontantRechargé => _spy.LastAmountRefilled;
 
-    public BadgeRecharge(bool rechargeAcceptée = true)
+    public BadgeRechargeFake(bool rechargeAcceptée = true)
     {
         _fake = new NfcTransceiverFake(chargeResult: false, refillResult: rechargeAcceptée);
         _spy = new NfcTransceiverSpy(_fake);

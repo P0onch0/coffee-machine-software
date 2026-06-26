@@ -1,9 +1,7 @@
-﻿using Hardware;
+using Hardware;
 using MachineACafé.Test.Utilities;
 
 namespace MachineACafé.Test;
-
-//TODO : Mocks automatisés.
 
 public class SoftwareMachineTest
 {
@@ -11,16 +9,16 @@ public class SoftwareMachineTest
     public void AucuneAction()
     {
         // ETANT DONNE une machine à café
-        var changeMachine = new ChangeMachineSpy();
+        var monnaie = new MonnaieTest();
         var brewer = new BrewerSpy();
 
         _ = new SoftwareMachineBuilder()
-            .AyantUneChangeMachine(changeMachine)
+            .AyantUneMonnaie(monnaie)
             .AyantUnBrewer(brewer)
             .Build();
 
         // ALORS aucune invocation du Brewer ou de la ChangeMachine n'est effectuée
-        Assert.True(changeMachine.Untouched);
+        Assert.True(monnaie.Untouched);
         Assert.True(brewer.Untouched);
     }
 
@@ -28,73 +26,60 @@ public class SoftwareMachineTest
     public void CasNominal()
     {
         // ETANT DONNE une machine à café
-        var changeMachine = new ChangeMachineFake();
-        var changeMachineSpy = new ChangeMachineSpy(changeMachine);
-
+        var monnaie = new MonnaieTest();
         var brewer = new BrewerSpy(new BrewerStub());
+
         _ = new SoftwareMachineBuilder()
-            .AyantUneChangeMachine(changeMachineSpy)
+            .AyantUneMonnaie(monnaie)
             .AyantUnBrewer(brewer)
             .Build();
 
         // QUAND on insère une somme supérieure ou égale au prix d'un café
-        changeMachine.SimulerInsertionPièce(CoinCode.FiftyCents);
+        monnaie.InsérerPièce(CoinCode.FiftyCents);
 
-        // ALORS MakeACoffee est appelé une fois sur le hardware
-        Assert.Equal(1, brewer.MakeACoffeeInvocations);
-
-        // ET CollectStoredMoney est appelé une fois sur le hardware
-        Assert.Equal(1, changeMachineSpy.CollectStoredMoneyInvocations);
-
-        // ET FlushStoredMoney n'est pas appelé
-        Assert.Equal(0, changeMachineSpy.FlushStoredMoneyInvocations);
+        // ALORS un café est préparé, la monnaie est encaissée et aucun remboursement n'a lieu
+        BrewerAssert.CaféPréparé(brewer);
+        ChangeMachineAssert.MonnaieEncaissée(monnaie);
+        ChangeMachineAssert.AucunRemboursement(monnaie);
     }
 
     [Fact]
     public void CasBrewerDéfaillant()
     {
         // ETANT DONNE une machine à café ayant un brewer défaillant
-        var changeMachine = new ChangeMachineFake();
-        var changeMachineSpy = new ChangeMachineSpy(changeMachine);
+        var monnaie = new MonnaieTest();
 
         _ = new SoftwareMachineBuilder()
             .AyantUnBrewer(new BrewerDummy())
-            .AyantUneChangeMachine(changeMachineSpy)
+            .AyantUneMonnaie(monnaie)
             .Build();
 
         // QUAND on insère une somme supérieure ou égale au prix d'un café
-        changeMachine.SimulerInsertionPièce(CoinCode.FiftyCents);
+        monnaie.InsérerPièce(CoinCode.FiftyCents);
 
-        // ALORS FlushStoredMoney est appelé une fois
-        Assert.Equal(1, changeMachineSpy.FlushStoredMoneyInvocations);
-
-        // ET CollectStoredMoney n'est pas appelé
-        Assert.Equal(0, changeMachineSpy.CollectStoredMoneyInvocations);
+        // ALORS la monnaie est rendue et aucun encaissement n'a lieu
+        ChangeMachineAssert.MonnaieRendue(monnaie);
+        ChangeMachineAssert.AucunEncaissement(monnaie);
     }
 
     [Fact]
     public void PasAssezArgent()
     {
         // ETANT DONNE une machine à café
-        var changeMachine = new ChangeMachineFake();
-        var changeMachineSpy = new ChangeMachineSpy(changeMachine);
-
+        var monnaie = new MonnaieTest();
         var brewer = new BrewerSpy();
+
         _ = new SoftwareMachineBuilder()
-            .AyantUneChangeMachine(changeMachineSpy)
+            .AyantUneMonnaie(monnaie)
             .AyantUnBrewer(brewer)
             .Build();
 
         // QUAND on insère moins que le prix d'un café
-        changeMachine.SimulerInsertionPièce(CoinCode.TwentyCents);
+        monnaie.InsérerPièce(CoinCode.TwentyCents);
 
-        // ALORS MakeACoffee n'est pas appelé
-        Assert.Equal(0, brewer.MakeACoffeeInvocations);
-
-        // ET CollectStoredMoney n'est pas appelé
-        Assert.Equal(0, changeMachineSpy.CollectStoredMoneyInvocations);
-
-        // ET FlushStoredMoney est appelé une fois
-        Assert.Equal(1, changeMachineSpy.FlushStoredMoneyInvocations);
+        // ALORS aucun café n'est préparé, la monnaie est rendue et aucun encaissement n'a lieu
+        BrewerAssert.AucunCafé(brewer);
+        ChangeMachineAssert.MonnaieRendue(monnaie);
+        ChangeMachineAssert.AucunEncaissement(monnaie);
     }
 }

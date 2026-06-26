@@ -31,13 +31,19 @@ internal class SoftwareMachineBuilder
         return this;
     }
 
-    public SoftwareMachineBuilder AyantUneClé(CléNfc clé)
+    public SoftwareMachineBuilder AyantUneClé(CléNfcFake clé)
     {
         _nfcTransceiver = clé.Transceiver;
         return this;
     }
 
-    public SoftwareMachineBuilder AyantUnBadgeRecharge(BadgeRecharge badge)
+    public SoftwareMachineBuilder AyantUneMonnaie(MonnaieTest monnaie)
+    {
+        _changeMachine = monnaie.ChangeMachine;
+        return this;
+    }
+
+    public SoftwareMachineBuilder AyantUnBadgeRecharge(BadgeRechargeFake badge)
     {
         _nfcTransceiver = badge.Transceiver;
         return this;

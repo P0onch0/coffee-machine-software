@@ -4,6 +4,8 @@ namespace MachineACafé;
 
 public class SoftwareMachine
 {
+    public const ushort PrixCafé = 40;
+
     private readonly IBrewer _brewer;
     private readonly IChangeMachine _changeMachine;
     private readonly INfcTransceiver _nfcTransceiver;
@@ -24,8 +26,8 @@ public class SoftwareMachine
         _modeRecharge = état == NfcState.RefillableDevicePresent;
         _dernierCentimes = null;
         if (état != NfcState.PrepaidDevicePresent) return;
-        if (!_nfcTransceiver.TryChargeAmount(40)) return;
-        try { _brewer.MakeACoffee(); } catch { _nfcTransceiver.TryRefillDevice(40); }
+        if (!_nfcTransceiver.TryChargeAmount(PrixCafé)) return;
+        try { _brewer.MakeACoffee(); } catch { _nfcTransceiver.TryRefillDevice(PrixCafé); }
     }
 
     private void Insérer(Coin somme)
@@ -40,7 +42,7 @@ public class SoftwareMachine
             return;
         }
 
-        if (somme.ValueInCents < 40)
+        if (somme.ValueInCents < PrixCafé)
         {
             _changeMachine.FlushStoredMoney();
             return;

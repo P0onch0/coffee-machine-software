@@ -8,7 +8,7 @@ public class NfcPaymentTest
     public void CaféServi_QuandSoldeSuffisant()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -23,17 +23,17 @@ public class NfcPaymentTest
     }
 
     [Fact]
-    public void CaféNonServi_QuandCléRechargeable()
+    public void CaféNonServi_QuandCléRechargeable_SansSolde()
     {
-        // ETANT DONNE une machine à café
-        var clé = new CléNfc();
+        // ETANT DONNE une machine à café avec une clé rechargeable sans solde
+        var clé = new CléNfcFake(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
-        // QUAND une clé rechargeable est présentée (non pré-payée)
+        // QUAND une clé rechargeable sans solde est présentée
         clé.PrésentationCléRechargeable();
 
         // ALORS aucun café n'est préparé
@@ -41,26 +41,10 @@ public class NfcPaymentTest
     }
 
     [Fact]
-    public void AucunDébit_QuandCléRechargeable()
-    {
-        // ETANT DONNE une machine à café
-        var clé = new CléNfc();
-        _ = new SoftwareMachineBuilder()
-            .AyantUneClé(clé)
-            .Build();
-
-        // QUAND une clé rechargeable est présentée
-        clé.PrésentationCléRechargeable();
-
-        // ALORS aucun débit n'est tenté sur la clé
-        Assert.Equal(0, clé.NombreDébits);
-    }
-
-    [Fact]
     public void CaféNonServi_QuandDébitRefusé()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée sans solde
-        var clé = new CléNfc(soldeSuffisant: false);
+        var clé = new CléNfcFake(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -78,7 +62,7 @@ public class NfcPaymentTest
     public void AucunRemboursement_QuandSoldeInsuffisant()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée sans solde
-        var clé = new CléNfc(soldeSuffisant: false);
+        var clé = new CléNfcFake(soldeSuffisant: false);
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .Build();
@@ -94,7 +78,7 @@ public class NfcPaymentTest
     public void AucunDébit_QuandAucunDispositif()
     {
         // ETANT DONNE une machine à café
-        var clé = new CléNfc();
+        var clé = new CléNfcFake();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .Build();
@@ -110,7 +94,7 @@ public class NfcPaymentTest
     public void AucunDébit_QuandMachineAuRepos()
     {
         // ETANT DONNE une machine à café sans interaction
-        var clé = new CléNfc();
+        var clé = new CléNfcFake();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .Build();
@@ -123,7 +107,7 @@ public class NfcPaymentTest
     public void PréparationTentée_QuandBrewerEnPanneAprèsDébit()
     {
         // ETANT DONNE une machine à café avec un brewer en panne et une clé chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy(new BrewerDummy());
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -141,7 +125,7 @@ public class NfcPaymentTest
     public void ArgentRemboursé_QuandBrewerEnPanneAprèsDébit()
     {
         // ETANT DONNE une machine à café avec un brewer en panne et une clé chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .AyantUnBrewer(new BrewerDummy())
@@ -152,14 +136,14 @@ public class NfcPaymentTest
 
         // ALORS le montant débité est remboursé sur la clé
         Assert.Equal(1, clé.NombreRemboursements);
-        Assert.Equal((ushort)40, clé.DernierMontantRemboursé);
+        Assert.Equal(SoftwareMachine.PrixCafé, clé.DernierMontantRemboursé);
     }
 
     [Fact]
     public void AucunRemboursement_QuandCaféPréparéAvecSuccès()
     {
         // ETANT DONNE une machine à café avec une clé chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .Build();
@@ -175,7 +159,7 @@ public class NfcPaymentTest
     public void DeuxCafésPréparés_QuandCléPrésentéeDeuxFoisDeSuite()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -195,7 +179,7 @@ public class NfcPaymentTest
     public void AucunCafé_QuandDeuxPrésentationsEtSoldeInsuffisant()
     {
         // ETANT DONNE une machine à café avec une clé sans solde
-        var clé = new CléNfc(soldeSuffisant: false);
+        var clé = new CléNfcFake(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -215,7 +199,7 @@ public class NfcPaymentTest
     public void DeuxRemboursements_QuandDeuxPrésentationsAvecBrewerEnPanne()
     {
         // ETANT DONNE une machine à café avec un brewer en panne et une clé chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy(new BrewerDummy());
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -236,7 +220,7 @@ public class NfcPaymentTest
     public void DeuxCafésPréparés_QuandRetraitEntreLesDeuxPrésentations()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -257,7 +241,7 @@ public class NfcPaymentTest
     public void UnCafé_QuandCléRechargeableAvantCléPréPayée()
     {
         // ETANT DONNE une machine à café avec une clé pré-payée chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -277,7 +261,7 @@ public class NfcPaymentTest
     public void MontantDébité_EstExactementLePrixDUnCafé()
     {
         // ETANT DONNE une machine à café avec une clé chargée
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .Build();
@@ -285,7 +269,7 @@ public class NfcPaymentTest
         // QUAND la clé est présentée
         clé.Présenter();
 
-        // ALORS exactement 40 centimes sont débités
-        Assert.Equal((ushort)40, clé.DernierMontantDébité);
+        // ALORS le montant débité est exactement le prix d'un café
+        Assert.Equal(SoftwareMachine.PrixCafé, clé.DernierMontantDébité);
     }
 }

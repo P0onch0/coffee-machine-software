@@ -5,86 +5,91 @@ namespace MachineACafé.Test;
 
 public class RechargeNfcTest
 {
-    [Fact]
-    public void RechargeEffectuée_QuandBadgePrésentEtPièceInsérée()
+    [Theory]
+    [InlineData(CoinCode.TwentyCents)]
+    [InlineData(CoinCode.FiftyCents)]
+    [InlineData(CoinCode.OneEuro)]
+    [InlineData(CoinCode.TwoEuros)]
+    public void RechargeEffectuée_QuandBadgePrésentEtPièceInsérée(CoinCode pièce)
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge(rechargeAcceptée: true);
-        var monnaie = new ChangeMachineFake();
-        var monnaiespy = new ChangeMachineSpy(monnaie);
+        var badge = new BadgeRechargeFake(rechargeAcceptée: true);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaiespy)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
-        // QUAND l'utilisateur insère une pièce de 2 €
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
+        // QUAND l'utilisateur insère une pièce
+        monnaie.InsérerPièce(pièce);
 
-        // ALORS la clé est créditée de 2 € et la pièce est encaissée
-        Assert.Equal((ushort)200, badge.DernierMontantRechargé);
-        Assert.Equal(1, monnaiespy.CollectStoredMoneyInvocations);
+        // ALORS la clé est créditée du montant de la pièce et celle-ci est encaissée
+        Assert.Equal((ushort)pièce, badge.DernierMontantRechargé);
+        ChangeMachineAssert.MonnaieEncaissée(monnaie);
     }
 
     [Fact]
     public void DeuxRechargesEffectuées_QuandDeuxPiècesInsérées()
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge(rechargeAcceptée: true);
-        var monnaie = new ChangeMachineFake();
-        var monnaiespy = new ChangeMachineSpy(monnaie);
+        var badge = new BadgeRechargeFake(rechargeAcceptée: true);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaiespy)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
         // QUAND l'utilisateur insère successivement une pièce de 2 € puis une pièce de 1 €
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
-        monnaie.SimulerInsertionPièce(CoinCode.OneEuro);
+        monnaie.InsérerPièce(CoinCode.TwoEuros);
+        monnaie.InsérerPièce(CoinCode.OneEuro);
 
         // ALORS deux recharges sont effectuées et deux pièces sont encaissées
         Assert.Equal(2, badge.NombreRecharges);
-        Assert.Equal(2, monnaiespy.CollectStoredMoneyInvocations);
+        Assert.Equal(2, monnaie.Encaissements);
     }
 
-    [Fact]
-    public void PièceRendue_QuandRechargeRefusée()
+    [Theory]
+    [InlineData(CoinCode.TwentyCents)]
+    [InlineData(CoinCode.FiftyCents)]
+    [InlineData(CoinCode.OneEuro)]
+    [InlineData(CoinCode.TwoEuros)]
+    public void PièceRendue_QuandRechargeRefusée(CoinCode pièce)
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge(rechargeAcceptée: false);
-        var monnaie = new ChangeMachineFake();
-        var monnaiespy = new ChangeMachineSpy(monnaie);
+        var badge = new BadgeRechargeFake(rechargeAcceptée: false);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaiespy)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
-        // QUAND l'utilisateur insère une pièce de 2 €
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
+        // QUAND l'utilisateur insère une pièce
+        monnaie.InsérerPièce(pièce);
 
         // ALORS la pièce est rendue et aucune recharge n'est effectuée
-        Assert.Equal(1, monnaiespy.FlushStoredMoneyInvocations);
-        Assert.Equal(0, monnaiespy.CollectStoredMoneyInvocations);
+        ChangeMachineAssert.MonnaieRendue(monnaie);
+        ChangeMachineAssert.AucunEncaissement(monnaie);
     }
 
     [Fact]
     public void UnSeulCrédit_QuandBadgeRetiréEntreLesDeuxPièces()
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur et une première pièce de 2 € insérée avec succès
-        var badge = new BadgeRecharge(rechargeAcceptée: true);
-        var monnaie = new ChangeMachineFake();
+        var badge = new BadgeRechargeFake(rechargeAcceptée: true);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaie)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
+        monnaie.InsérerPièce(CoinCode.TwoEuros);
 
         // QUAND l'utilisateur retire son badge puis insère une pièce de 1 €
         badge.RetirerDuLecteur();
-        monnaie.SimulerInsertionPièce(CoinCode.OneEuro);
+        monnaie.InsérerPièce(CoinCode.OneEuro);
 
         // ALORS la clé n'est créditée qu'une seule fois
         Assert.Equal(1, badge.NombreRecharges);
@@ -94,11 +99,11 @@ public class RechargeNfcTest
     public void AucunEffet_QuandBadgePosépuisRetiréSansPièce()
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge();
-        var monnaiespy = new ChangeMachineSpy();
+        var badge = new BadgeRechargeFake();
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaiespy)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
@@ -107,25 +112,25 @@ public class RechargeNfcTest
 
         // ALORS aucune recharge et aucun mouvement de monnaie ne sont effectués
         Assert.Equal(0, badge.NombreRecharges);
-        Assert.True(monnaiespy.Untouched);
+        Assert.True(monnaie.Untouched);
     }
 
     [Fact]
-    public void CaféServiEtCléDébitéeDe40Cts_QuandBadgePréPayéPrésenté()
+    public void CaféServiEtCléDébitée_QuandBadgePréPayéPrésenté()
     {
         // ETANT DONNE une machine avec un badge pré-payé dont le solde est suffisant
-        var clé = new CléNfc(soldeSuffisant: true);
+        var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
-        // QUAND l'utilisateur présente son badge pour un café à 0,40 €
+        // QUAND l'utilisateur présente son badge
         clé.Présenter();
 
-        // ALORS la clé est débitée de 0,40 € et le café est distribué
-        Assert.Equal((ushort)40, clé.DernierMontantDébité);
+        // ALORS la clé est débitée du prix du café et le café est distribué
+        Assert.Equal(SoftwareMachine.PrixCafé, clé.DernierMontantDébité);
         BrewerAssert.CaféPréparé(brewer);
     }
 
@@ -133,35 +138,34 @@ public class RechargeNfcTest
     public void RechargeAcceptée_QuandPièceAtteinLePlafond()
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge(rechargeAcceptée: true);
-        var monnaie = new ChangeMachineFake();
-        var monnaiespy = new ChangeMachineSpy(monnaie);
+        var badge = new BadgeRechargeFake(rechargeAcceptée: true);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaiespy)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
-        // QUAND l'utilisateur insère une pièce de 2 € (qui atteint exactement le plafond)
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
+        // QUAND l'utilisateur insère une pièce de 2 € (valeur maximale)
+        monnaie.InsérerPièce(CoinCode.TwoEuros);
 
         // ALORS la recharge est acceptée et la pièce est encaissée
         Assert.Equal(1, badge.NombreRecharges);
-        Assert.Equal(1, monnaiespy.CollectStoredMoneyInvocations);
+        ChangeMachineAssert.MonnaieEncaissée(monnaie);
     }
 
     [Fact]
     public void AucunCafé_QuandSoldeInsuffisantPourPayer()
     {
         // ETANT DONNE une machine avec un badge dont le solde est insuffisant pour un café
-        var clé = new CléNfc(soldeSuffisant: false);
+        var clé = new CléNfcFake(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
             .AyantUnBrewer(brewer)
             .Build();
 
-        // QUAND l'utilisateur présente son badge pour un café à 0,40 €
+        // QUAND l'utilisateur présente son badge
         clé.Présenter();
 
         // ALORS aucun café n'est distribué et aucun remboursement n'est déclenché
@@ -173,7 +177,7 @@ public class RechargeNfcTest
     public void AucunCafé_QuandConnexionPerduePendantLeDébit()
     {
         // ETANT DONNE une machine avec un badge dont la connexion est perdue pendant le débit
-        var clé = new CléNfc(soldeSuffisant: false);
+        var clé = new CléNfcFake(soldeSuffisant: false);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
             .AyantUneClé(clé)
@@ -192,17 +196,17 @@ public class RechargeNfcTest
     public void UnSeulCrédit_QuandDoubleSignalPourLaMêmePièce()
     {
         // ETANT DONNE une machine avec un badge rechargeable posé sur le lecteur
-        var badge = new BadgeRecharge(rechargeAcceptée: true);
-        var monnaie = new ChangeMachineFake();
+        var badge = new BadgeRechargeFake(rechargeAcceptée: true);
+        var monnaie = new MonnaieTest();
         _ = new SoftwareMachineBuilder()
             .AyantUnBadgeRecharge(badge)
-            .AyantUneChangeMachine(monnaie)
+            .AyantUneMonnaie(monnaie)
             .Build();
         badge.PoserSurLecteur();
 
         // QUAND le système reçoit deux signaux d'insertion pour la même pièce de 2 €
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
-        monnaie.SimulerInsertionPièce(CoinCode.TwoEuros);
+        monnaie.InsérerPièce(CoinCode.TwoEuros);
+        monnaie.InsérerPièce(CoinCode.TwoEuros);
 
         // ALORS la clé n'est créditée qu'une seule fois
         Assert.Equal(1, badge.NombreRecharges);
