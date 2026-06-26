@@ -23,6 +23,24 @@ public class NfcPaymentTest
     }
 
     [Fact]
+    public void CaféServi_QuandSoldeSuffisant_Rechargeable()
+    {
+        // ETANT DONNE une machine à café avec une clé rechargeable dont le solde est suffisant
+        var clé = new CléNfcFake(soldeSuffisant: true);
+        var brewer = new BrewerSpy();
+        _ = new SoftwareMachineBuilder()
+            .AyantUneClé(clé)
+            .AyantUnBrewer(brewer)
+            .Build();
+
+        // QUAND l'utilisateur présente sa clé rechargeable au lecteur
+        clé.PrésentationCléRechargeable();
+
+        // ALORS un café est préparé
+        BrewerAssert.CaféPréparé(brewer);
+    }
+
+    [Fact]
     public void CaféNonServi_QuandCléRechargeable_SansSolde()
     {
         // ETANT DONNE une machine à café avec une clé rechargeable sans solde
@@ -238,9 +256,9 @@ public class NfcPaymentTest
     }
 
     [Fact]
-    public void UnCafé_QuandCléRechargeableAvantCléPréPayée()
+    public void DeuxCafés_QuandCléRechargeableAvecSoldeEtCléPréPayée()
     {
-        // ETANT DONNE une machine à café avec une clé pré-payée chargée
+        // ETANT DONNE une machine à café avec une clé rechargeable dont le solde est suffisant
         var clé = new CléNfcFake(soldeSuffisant: true);
         var brewer = new BrewerSpy();
         _ = new SoftwareMachineBuilder()
@@ -252,9 +270,9 @@ public class NfcPaymentTest
         clé.PrésentationCléRechargeable();
         clé.Présenter();
 
-        // ALORS un seul café est préparé et un seul débit est effectué
-        Assert.Equal(1, brewer.MakeACoffeeInvocations);
-        Assert.Equal(1, clé.NombreDébits);
+        // ALORS deux cafés sont préparés et deux débits sont effectués
+        Assert.Equal(2, brewer.MakeACoffeeInvocations);
+        Assert.Equal(2, clé.NombreDébits);
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public class SoftwareMachine
     {
         _modeRecharge = état == NfcState.RefillableDevicePresent;
         _dernierCentimes = null;
-        if (état != NfcState.PrepaidDevicePresent) return;
+        if (état == NfcState.NoDevice) return;
         if (!_nfcTransceiver.TryChargeAmount(PrixCafé)) return;
         try { _brewer.MakeACoffee(); } catch { _nfcTransceiver.TryRefillDevice(PrixCafé); }
     }
